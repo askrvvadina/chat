@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Contact</title>
+    <link rel="stylesheet" href="styles/newContact.css">
+</head>
+
+<body>
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>New contact</h2>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelContact">Cancel</button>
+                <button class="btn-save" id="saveContact">Save</button>
+            </div>
+        </div>
+
+        <div class="contact-form">
+            <div class="contact-photo">
+                <div class="photo-placeholder">
+                    <img src="images/camera.png" alt="Add Photo">
+                </div>
+            </div>
+
+            <div class="input-fields">
+                <input type="text" class="contact-input" placeholder="First name">
+                <input type="text" class="contact-input" placeholder="Last name">
+                <input type="email" class="contact-input" placeholder="Email...">
+                <input type="tel" class="contact-input" placeholder="Phone number">
+            </div>
+        </div>
+    </div>
+
+    <script src="js/newContact.js"></script>
+</body>
