@@ -1,99 +1,44 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // DOM elements
-    const profileModal = document.getElementById('profileModal');
-    const profileAvatar = document.getElementById('profileAvatar');
-    const avatarChange = document.querySelector('.avatar-change');
-    const avatarInput = document.getElementById('avatarInput');
-    const profileName = document.getElementById('profileName');
-    const profileEmail = document.getElementById('profileEmail');
-    const profilePassword = document.getElementById('profilePassword');
-    const cancelButton = document.getElementById('cancelButton');
-    const saveButton = document.getElementById('saveButton');
+    const cancelBtn = document.querySelector('.btn.cancel');
+    const saveBtn = document.querySelector('.btn.save');
+    const avatarImg = document.getElementById('avatar-img');
+    const userNameInput = document.getElementById('user-name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
 
-    // Check if we're in an iframe
-    const isInIframe = window.frameElement !== null;
+    // Load current user data from parent window
+    window.addEventListener('message', function (event) {
+        if (event.data && event.data.type === 'userData') {
+            const userData = event.data.data;
+            avatarImg.src = userData.avatar || 'images/avatar.png';
+            userNameInput.value = userData.name || '';
+            emailInput.value = userData.email || '';
+            passwordInput.value = userData.password || '';
+        }
+    });
 
-    // Load profile data from localStorage if available
-    function loadProfileData() {
-        // Use parent's localStorage if in an iframe
-        const storage = isInIframe ? window.parent.localStorage : localStorage;
-        const userData = JSON.parse(storage.getItem('chatAppUserData')) || {};
+    // Request user data from parent window
+    window.parent.postMessage({ type: 'requestUserData' }, '*');
 
-        if (userData.name) profileName.value = userData.name;
-        if (userData.email) profileEmail.value = userData.email;
-        if (userData.password) profilePassword.value = userData.password;
-        if (userData.avatar) profileAvatar.src = userData.avatar;
-    }
+    // Close modal on cancel
+    cancelBtn.addEventListener('click', function () {
+        window.parent.postMessage('closeProfileModal', '*');
+    });
 
-    // Save profile data to localStorage
-    function saveProfileData() {
-        const userData = {
-            name: profileName.value.trim(),
-            email: profileEmail.value.trim(),
-            password: profilePassword.value,
-            avatar: profileAvatar.src
+    // Save changes and close modal
+    saveBtn.addEventListener('click', function () {
+        const updatedUserData = {
+            name: userNameInput.value || 'Nurtilek Abibillaev',
+            email: emailInput.value || 'nurtilek@example.com',
+            password: passwordInput.value || '',
+            avatar: avatarImg.src
         };
 
-        // Use parent's localStorage if in an iframe
-        const storage = isInIframe ? window.parent.localStorage : localStorage;
-        storage.setItem('chatAppUserData', JSON.stringify(userData));
+        // Save to localStorage
+        localStorage.setItem('userProfile', JSON.stringify(updatedUserData));
 
-        console.log("Profile data saved:", userData);
-    }
-
-    // Avatar change functionality
-    avatarChange.addEventListener('click', function () {
-        avatarInput.click();
+        // Notify parent to update UI and close modal
+        window.parent.postMessage({ type: 'updateUserProfile', data: updatedUserData }, '*');
+        window.parent.postMessage('closeProfileModal', '*');
     });
-
-    // Handle avatar file selection
-    avatarInput.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                profileAvatar.src = e.target.result;
-            };
-            reader.readAsDataURL(this.files[0]);
-        }
-    });
-
-    // Cancel button click handler
-    cancelButton.addEventListener('click', function () {
-        if (isInIframe) {
-            console.log("Sending closeProfile message to parent");
-            window.parent.postMessage('closeProfile', '*');
-        } else {
-            window.close();
-        }
-    });
-
-    // Save button click handler
-    saveButton.addEventListener('click', function () {
-        saveProfileData();
-        if (isInIframe) {
-            console.log("Sending profileSaved message to parent");
-            window.parent.postMessage('profileSaved', '*');
-        } else {
-            window.close();
-        }
-    });
-
-    // Handle ESC key press to close the modal
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            if (isInIframe) {
-                window.parent.postMessage('closeProfile', '*');
-            } else {
-                window.close();
-            }
-        }
-    });
-
-    // Initialize profile data
-    loadProfileData();
-
-    // Always show the modal
-    if (profileModal) {
-        profileModal.style.display = 'flex';
-    }
 });

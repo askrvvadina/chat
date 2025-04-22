@@ -2,308 +2,135 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat Application</title>
-<link rel="stylesheet" href="styles/chat.css">
-<!-- Add this line to include profile styles -->
-<link rel="stylesheet" href="styles/profile.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="styles/chat.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+    <!-- Add emoji-picker-element library -->
+    <script src="https://unpkg.com/emoji-picker-element@latest/dist/index.js" type="module"></script>
 </head>
 
 <body>
-    <div class="mobile-menu-toggle" id="menuToggle">
-        <span style="color: white; font-size: 20px;">☰</span>
-    </div>
-
-    <div class="chat-container">
-        <!-- Left sidebar -->
+    <div class="app-container">
         <div class="sidebar">
-            <!-- User profile header -->
-            <div class="user-profile">
-                <div class="profile-avatar">
-                    <img src="images/contact-icon.png" alt="User Avatar">
+            <div class="profile-section">
+                <div class="user-avatar">
+                    <img src="chat-app/frontend/images/avatar.png" alt="User Avatar">
                 </div>
-                <div class="user-name">Nurtilek Abibillaev</div>
-                <div class="menu-dots" id="userMenuButton">•••</div>
-                <!-- User menu popup -->
-                <div class="user-menu" id="userMenu">
-                    <div class="menu-item" id="languageMenuItem">Language</div>
-                    <div class="menu-item">Edit Profile</div>
-                </div>
-                
-                <!-- Add this styles section to your HTML head or CSS file -->
-                <style>
-                    .language-submenu {
-                        display: none;
-                        position: absolute;
-                        top: 0;
-                        left: 100%;
-                        background-color: white;
-                        border-radius: 5px;
-                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                        width: 150px;
-                        z-index: 1001;
-                    }
-                
-                    .language-option {
-                        padding: 12px 15px;
-                        cursor: pointer;
-                        border-bottom: 1px solid #f0f0f0;
-                    }
-                
-                    .language-option:hover {
-                        background-color: #f5f5f5;
-                    }
-                
-                    .language-option:last-child {
-                        border-bottom: none;
-                    }
-                
-                    /* Improved styling for the language menu item */
-                    #languageMenuItem {
-                        position: relative;
-                    }
-                
-                    #languageMenuItem::after {
-                        content: '›';
-                        position: absolute;
-                        right: 12px;
-                        top: 50%;
-                        transform: translateY(-50%);
-                    }
-                </style>
-            </div>
-
-            <!-- Search bar -->
-            <div class="search-container">
-                <div class="search-box">
-                    <img src="images/search.png" alt="Search" class="search-icon">
-                    <input type="text" placeholder="Search...">
-                </div>
-                <div class="contact-icons">
-                        <img src="images/contact-icon.png" alt="Contacts" id="contactIcon">
-                        <img src="images/group-icon.png" alt="Groups" id="groupIcon">
-                        </div>
-            </div>
-
-            <!-- Chat list -->
-            <div class="chat-list">
-                <div class="chat-item active">
-                    <div class="chat-avatar">
-                        <img src="images/contact-icon.png" alt="Contact">
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">Adina Tagaeva</div>
-                        <div class="chat-message">Hello</div>
-                    </div>
-                </div>
-
-                <div class="chat-item">
-                    <div class="chat-avatar">
-                        <img src="images/contact-icon.png" alt="Contact">
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">Mark Zuckerberg</div>
-                        <div class="chat-message">Hello</div>
-                    </div>
-                </div>
-
-                <div class="chat-item">
-                    <div class="chat-avatar">
-                        <img src="images/contact-icon.png" alt="Contact">
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">Mark Zuckerberg</div>
-                        <div class="chat-message">Hello</div>
-                    </div>
-                </div>
-
-                <div class="chat-item">
-                    <div class="chat-avatar">
-                        <img src="images/contact-icon.png" alt="Contact">
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">Mark Zuckerberg</div>
-                        <div class="chat-message">Hello</div>
-                    </div>
-                </div>
-
-                <div class="chat-item">
-                    <div class="chat-avatar">
-                        <img src="images/contact-icon.png" alt="Contact">
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">Mark Zuckerberg</div>
-                        <div class="chat-message">Hello</div>
-                    </div>
-                </div>
-
-                <div class="chat-item">
-                    <div class="chat-avatar">
-                        <img src="images/contact-icon.png" alt="Contact">
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">Mark Zuckerberg</div>
-                        <div class="chat-message">Hello</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Chat content area -->
-        <div class="chat-content">
-            <!-- Chat header -->
-            <div class="chat-header">
-                <div class="contact-info">
-                    <div class="contact-avatar">
-                        <img src="images/contact-icon.png" alt="Contact Avatar">
-                    </div>
-                    <div class="contact-details">
-                        <div class="contact-name">Adina Tagaeva</div>
-                        <div class="last-seen">last seen yesterday at 21:58</div>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <img src="images/call.png" alt="Call" class="action-icon">
-                    <img src="images/video.png" alt="Video" class="action-icon">
-                    <img src="images/info.png" alt="Info" class="action-icon" id="infoButton">
-                </div>
-            </div>
-
-            <!-- Chat messages area -->
-            <div class="messages-container">
-                <!-- Received message -->
-                <div class="message-actions">
-                    <div class="action-menu">
-                        <div class="action-item" data-action="edit">
-                            <img src="images/edit.png" alt="Edit" class="action-icon">
-                            Edit
-                        </div>
-                        <div class="action-item" data-action="copy">
-                            <img src="images/copy.png" alt="Copy" class="action-icon">
-                            Copy
-                        </div>
-                        <div class="action-item" data-action="delete">
-                            <img src="images/delete.png" alt="Delete" class="action-icon">
-                            Delete
-                        </div>
-                    </div>
-                </div>
-                </div>
-
-                <!-- Message input area -->
-                <div class="message-input-container">
-                    <div class="input-actions">
-                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                        <img src="images/attach.png" alt="Attach" class="input-icon" id="attachButton">
-                        <img src="images/emoji.png" alt="Emoji" class="input-icon" id="emojiButton">
-                    </div>
-                    <input type="text" class="message-input" placeholder="Type a message...">
-                    <button class="send-button">Send</button>
-                </div>
-
-                <!-- Emoji picker panel -->
-                <div class="emoji-panel" id="emojiPanel">
-                    <div class="emoji-grid">
-                        <span class="emoji">😀</span>
-                        <span class="emoji">😂</span>
-                        <span class="emoji">😍</span>
-                        <span class="emoji">🥳</span>
-                        <span class="emoji">😎</span>
-                        <span class="emoji">🤔</span>
-                        <span class="emoji">🙄</span>
-                        <span class="emoji">😴</span>
-                        <span class="emoji">👍</span>
-                        <span class="emoji">❤️</span>
-                        <span class="emoji">🔥</span>
-                        <span class="emoji">🎉</span>
-                        <span class="emoji">🙄</span>
-                        <span class="emoji">🤘</span>
-                    </div>
-                </div>
-            
-
-            <!-- Right sidebar - user info (hidden by default) -->
-            <div class="user-sidebar" id="userSidebar">
-                <div class="sidebar-close" id="closeSidebar">×</div>
                 <div class="user-info">
-                    <div class="user-avatar">
-                        <img src="images/contact-icon.png" alt="User Avatar">
-                    </div>
-                    <div class="user-fullname">Adina Tagaeva</div>
+                    <h3>Nurtilek Abibillaev</h3>
+                    <p class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                            data-cfemail="37794245435e5b525c77524f565a475b521954585a">[email protected]</a></p>
                 </div>
-
-                <div class="user-sections">
-                    <div class="section">
-                        <div class="section-title">Shared photos</div>
-                        <div class="section-arrow">›</div>
+                <div class="menu-actions">
+                    <div class="menu-dots" id="menu-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </div>
-                    <div class="section">
-                        <div class="section-title">Shared files</div>
-                        <div class="section-arrow">›</div>
-                    </div>
-                    <div class="shared-file">
-                        <div class="file-preview">
-                            <img src="images/placeholder-sunset.jpg" alt="Photo" class="file-thumbnail">
-                        </div>
-                        <div class="file-info">
-                            <div class="file-name">photo 20-04-2025.png</div>
-                            <img src="images/dowload.png" alt="Download" class="download-icon">
-                        </div>
+                    <div class="dropdown-menu" id="dropdown-menu">
+                        <ul>
+                            <li>Edit Profile</li>
+                            <li>Select Language</li>
+                            <li>Select Contact</li>
+                        </ul>
                     </div>
                 </div>
-
-                <div class="block-section">
-                    <button class="block-button" id="blockButton">Block user</button>
+            </div>
+            <div class="search-section">
+                <div class="search-bar">
+                    <img src="images/search.png" alt="Search" class="search-icon">
+                    <input type="text" id="search" placeholder="Search...">
+                </div>
+                <div class="search-actions">
+                    <div class="action-icon" id="contacts-icon">
+                        <img src="images/contact-icon.png" alt="Contacts" class="nav-icon">
+                    </div>
+                    <div class="action-icon" id="groups-icon">
+                        <img src="images/group-icon.png" alt="Groups" class="nav-icon">
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <div class="selection-actions" style="display: none;">
+                    <button id="delete-selected" class="delete-button">Delete</button>
+                    <button id="cancel-selection" class="cancel-button">Cancel</button>
+                </div>
+                <div class="section active" data-section="chats">
+                    <div class="chats-list"></div>
+                </div>
+                <div class="section" data-section="contacts">
+                    <div class="contacts-list"></div>
+                </div>
+                <div class="section" data-section="groups">
+                    <div class="groups-list"></div>
                 </div>
             </div>
         </div>
-
-        <!-- Modal overlay for confirm delete/block -->
-        <div class="modal-overlay" id="modalOverlay">
-            <div class="modal-content">
-                <div class="modal-header">Block User</div>
-                <div class="modal-body">Are you sure you want to block this user?</div>
-                <div class="modal-actions">
-                    <button class="btn-cancel" id="cancelBlock">Cancel</button>
-                    <button class="btn-delete" id="confirmBlock">Block</button>
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-app-logo">
+                    <img src="images/chat.png" alt="Chat App" class="chat-logo">
+                    <h1>Chat App</h1>
+                </div>
+                <div class="chat-view" style="display: none;">
+                    <div class="chat-header">
+                        <div class="chat-contact-info">
+                            <div class="contact-avatar">
+                                <img src="chat-app/frontend/images/avatar.png" alt="Contact Avatar"
+                                    id="chat-contact-avatar">
+                            </div>
+                            <div class="contact-details">
+                                <h3 id="chat-contact-name">Contact Name</h3>
+                                <p id="chat-contact-status">Last seen recently</p>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <img src="chat-app/frontend/images/call.png" alt="Call" class="action-icon call-icon">
+                            <img src="chat-app/frontend/images/info.png" alt="Info" class="action-icon info-icon"
+                                id="info-icon">
+                        </div>
+                    </div>
+                    <div class="chat-body" id="chat-body">
+                        <!-- Messages will be dynamically added here -->
+                    </div>
+                    <div class="chat-input">
+                        <div class="input-actions">
+                            <img src="chat-app/frontend/images/attach.png" alt="Attach" class="action-icon attach-icon"
+                                id="attach-icon">
+                            <input type="file" id="file-input" style="display: none;"
+                                accept="image/*,video/*,application/pdf,.doc,.docx">
+                            <img src="chat-app/frontend/images/emoji.png" alt="Emoji" class="action-icon emoji-icon"
+                                id="emoji-icon">
+                            <div class="emoji-picker-container" id="emoji-picker-container" style="display: none;">
+                                <emoji-picker id="emoji-picker"></emoji-picker>
+                            </div>
+                        </div>
+                        <input type="text" id="message-input" placeholder="Type a message...">
+                        <button id="send-button">Send</button>
+                    </div>
+                </div>
+            </div>
+            <div class="right-panel" id="right-panel" style="display: none;">
+                <div class="panel-content">
+                    <h4>Shared photos</h4>
+                    <div class="shared-item">
+                        <img src="chat-app/frontend/images/dowload.png" alt="Download" class="download-icon">
+                        <p>photo_20-04-2025.png <a href="#">Download</a></p>
+                    </div>
+                    <h4>Shared files</h4>
+                    <div class="shared-item">
+                        <img src="chat-app/frontend/images/dowload.png" alt="Download" class="download-icon">
+                        <p>file_20-04-2025.pdf <a href="#">Download</a></p>
+                    </div>
+                    <button class="block-button">Block user</button>
                 </div>
             </div>
         </div>
-
-
-
-
-        <script src="js/chat.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const menuToggle = document.getElementById('menuToggle');
-                const sidebar = document.querySelector('.sidebar');
-
-                // Toggle sidebar on mobile
-                menuToggle.addEventListener('click', function () {
-                    sidebar.classList.toggle('active');
-                });
-
-                // Hide sidebar when clicking outside on mobile
-                document.addEventListener('click', function (e) {
-                    if (window.innerWidth <= 768 &&
-                        !e.target.closest('.sidebar') &&
-                        !e.target.closest('#menuToggle') &&
-                        sidebar.classList.contains('active')) {
-                        sidebar.classList.remove('active');
-                    }
-                });
-
-                // Handle window resize
-                window.addEventListener('resize', function () {
-                    if (window.innerWidth > 768) {
-                        sidebar.classList.remove('active');
-                    }
-                });
-            });
-        </script>
-
+    </div>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script src="js/chat.js"></script>
 </body>
 
 </html>
