@@ -17,6 +17,7 @@ let currentChatContact = null;
 let isOnline = true;
 let isContactOnline = true;
 let replyingToMessage = null; // Хранит сообщение, на которое отвечают
+let editingMessage = null; // Хранит сообщение, которое редактируется
 
 function setupTopMenu() {
     const menuDots = document.getElementById('menu-dots');
@@ -132,52 +133,70 @@ function setupChatInterface() {
     const fileInput = document.getElementById('file-input');
     const emojiIcon = document.getElementById('emoji-icon');
     const emojiPickerContainer = document.getElementById('emoji-picker-container');
-    const emojiPicker = document.getElementById('emoji-picker');
+    const emojiPicker = document.querySelector('emoji-picker');
     const infoIcon = document.getElementById('info-icon');
     const rightPanel = document.getElementById('right-panel');
     const photoModal = document.getElementById('photo-modal');
     const fullScreenPhoto = document.getElementById('full-screen-photo');
     const closePhoto = document.getElementById('close-photo');
     const cancelReplyButton = document.getElementById('cancel-reply');
+    const cancelEditButton = document.getElementById('cancel-edit');
 
     if (sendButton) {
-        sendButton.addEventListener('click', sendMessage);
+        sendButton.addEventListener('click', function () {
+            console.log('Send button clicked');
+            sendMessage();
+        });
+    } else {
+        console.error('Send button not found');
     }
 
     if (messageInput) {
         messageInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
+                console.log('Enter key pressed in message input');
                 sendMessage();
             }
         });
+    } else {
+        console.error('Message input not found');
     }
 
     if (attachIcon && fileInput) {
         attachIcon.addEventListener('click', function () {
+            console.log('Attach icon clicked');
             fileInput.click();
         });
+    } else {
+        console.error('Attach icon or file input not found');
     }
 
     if (fileInput) {
         fileInput.addEventListener('change', function (event) {
+            console.log('File input changed');
             const file = event.target.files[0];
             if (file) {
                 sendAttachment(file);
             }
             event.target.value = '';
         });
+    } else {
+        console.error('File input not found');
     }
 
     if (emojiIcon && emojiPickerContainer && emojiPicker) {
         emojiIcon.addEventListener('click', function (e) {
             e.stopPropagation();
+            console.log('Emoji icon clicked');
             emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'none' ? 'block' : 'none';
         });
 
         emojiPicker.addEventListener('emoji-click', function (event) {
+            console.log('Emoji selected:', event.detail.unicode);
             if (messageInput) {
                 messageInput.value += event.detail.unicode;
                 emojiPickerContainer.style.display = 'none';
+                messageInput.focus();
             }
         });
 
@@ -186,6 +205,8 @@ function setupChatInterface() {
                 emojiPickerContainer.style.display = 'none';
             }
         });
+    } else {
+        console.error('Emoji icon, picker container, or picker not found');
     }
 
     if (infoIcon && rightPanel) {
@@ -206,13 +227,51 @@ function setupChatInterface() {
             document.getElementById('reply-preview').style.display = 'none';
         });
     }
+
+    if (cancelEditButton) {
+        cancelEditButton.addEventListener('click', function () {
+            editingMessage = null;
+            document.getElementById('edit-preview').style.display = 'none';
+            document.getElementById('message-input').value = '';
+        });
+    }
 }
 
 function sendMessage() {
     const messageInput = document.getElementById('message-input');
     const messageText = messageInput.value.trim();
 
-    if (messageText === '' || !currentChatContact) return;
+    if (!messageInput) {
+        console.error('Message input not found in sendMessage');
+        return;
+    }
+
+    if (messageText === '') {
+        console.log('Message is empty');
+        return;
+    }
+
+    if (!currentChatContact) {
+        alert('Please select a contact to send the message to.');
+        return;
+    }
+
+    if (editingMessage) {
+        console.log('Editing message:', editingMessage);
+        const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+        const messages = chats[currentChatContact.index] || [];
+        const messageIndex = messages.findIndex(msg => msg.fullTimestamp === editingMessage.fullTimestamp && msg.sender === 'user');
+        if (messageIndex !== -1) {
+            messages[messageIndex].content = messageText;
+            chats[currentChatContact.index] = messages;
+            localStorage.setItem('chats', JSON.stringify(chats));
+            loadMessages(currentChatContact.index);
+        }
+        messageInput.value = '';
+        editingMessage = null;
+        document.getElementById('edit-preview').style.display = 'none';
+        return;
+    }
 
     if (!isOnline) {
         const message = {
@@ -221,12 +280,15 @@ function sendMessage() {
             sender: 'user',
             status: 'Failed',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            fullTimestamp: new Date().toISOString(),
             replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
         };
+        console.log('Sending failed message:', message);
         addMessageToChat(message);
         saveMessage(currentChatContact.index, message);
         replyingToMessage = null;
         document.getElementById('reply-preview').style.display = 'none';
+        messageInput.value = '';
         return;
     }
 
@@ -236,9 +298,11 @@ function sendMessage() {
         sender: 'user',
         status: isContactOnline ? 'Delivered' : 'Sent',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        fullTimestamp: new Date().toISOString(),
         replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
     };
 
+    console.log('Sending message:', message);
     addMessageToChat(message);
     saveMessage(currentChatContact.index, message);
 
@@ -248,7 +312,8 @@ function sendMessage() {
             content: 'This is a reply!',
             sender: 'contact',
             status: 'Read',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            fullTimestamp: new Date().toISOString()
         };
         addMessageToChat(receivedMessage);
         saveMessage(currentChatContact.index, receivedMessage);
@@ -274,6 +339,7 @@ function sendAttachment(file) {
             sender: 'user',
             status: 'Failed',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            fullTimestamp: new Date().toISOString(),
             replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
         };
         addMessageToChat(message);
@@ -289,6 +355,7 @@ function sendAttachment(file) {
         sender: 'user',
         status: isContactOnline ? 'Delivered' : 'Sent',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        fullTimestamp: new Date().toISOString(),
         replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
     };
 
@@ -309,6 +376,7 @@ function sendAttachment(file) {
             message.fileType = file.type;
         }
 
+        console.log('Sending attachment:', message);
         addMessageToChat(message);
         saveMessage(currentChatContact.index, message);
 
@@ -318,7 +386,8 @@ function sendAttachment(file) {
                 content: 'Got it!',
                 sender: 'contact',
                 status: 'Read',
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                fullTimestamp: new Date().toISOString()
             };
             addMessageToChat(receivedMessage);
             saveMessage(currentChatContact.index, receivedMessage);
@@ -355,13 +424,16 @@ function addMessageToChat(message) {
     messageMenu.className = 'message-menu';
     const menuList = document.createElement('ul');
 
+    const canEdit = message.sender === 'user' && isWithinEditTimeLimit(message.fullTimestamp);
+
     if (message.sender === 'user') {
-        menuList.innerHTML = `
+        let menuItems = `
             <li class="copy-message"><img src="images/copy.png" alt="Copy"> Copy</li>
-            <li class="edit-message"><img src="images/edit.png" alt="Edit"> Edit</li>
+            ${canEdit ? '<li class="edit-message"><img src="images/edit.png" alt="Edit"> Edit</li>' : ''}
             <li class="delete-message"><img src="images/delete.png" alt="Delete"> Delete</li>
             <li class="reply-message"><img src="images/reply.png" alt="Reply"> Reply</li>
         `;
+        menuList.innerHTML = menuItems;
     } else {
         menuList.innerHTML = `
             <li class="copy-message"><img src="images/copy.png" alt="Copy"> Copy</li>
@@ -387,12 +459,6 @@ function addMessageToChat(message) {
             handleMessageAction(action, message, messageDiv);
             messageMenu.classList.remove('active');
         });
-    });
-
-    document.addEventListener('click', (event) => {
-        if (!dropdownIcon.contains(event.target) && !messageMenu.contains(event.target)) {
-            messageMenu.classList.remove('active');
-        }
     });
 
     const contentDiv = document.createElement('div');
@@ -487,6 +553,17 @@ function addMessageToChat(message) {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
+// Выносим обработчик закрытия меню за пределы addMessageToChat
+document.addEventListener('click', (event) => {
+    const messageMenus = document.querySelectorAll('.message-menu');
+    messageMenus.forEach(menu => {
+        const dropdownIcon = menu.parentElement.querySelector('.dropdown-icon');
+        if (!dropdownIcon.contains(event.target) && !menu.contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    });
+});
+
 function adjustMenuPosition(messageDiv, messageMenu) {
     const messageRect = messageDiv.getBoundingClientRect();
     const chatBodyRect = document.getElementById('chat-body').getBoundingClientRect();
@@ -509,32 +586,40 @@ function adjustMenuPosition(messageDiv, messageMenu) {
     }
 }
 
+function showCopyNotification() {
+    const notification = document.getElementById('copy-notification');
+    if (notification) {
+        notification.classList.add('show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 2000);
+    }
+}
+
+function isWithinEditTimeLimit(fullTimestamp) {
+    const messageTime = new Date(fullTimestamp).getTime();
+    const currentTime = new Date().getTime();
+    const timeDiff = (currentTime - messageTime) / 1000 / 60;
+    return timeDiff <= 15;
+}
+
 function handleMessageAction(action, message, messageDiv) {
     if (action === 'copy-message') {
-        navigator.clipboard.writeText(message.type === 'text' ? message.content : message.fileData || message.content);
+        navigator.clipboard.writeText(message.type === 'text' ? message.content : message.fileData || message.content).then(() => {
+            showCopyNotification();
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
     } else if (action === 'edit-message' && message.sender === 'user') {
+        editingMessage = message;
+        const editPreview = document.getElementById('edit-preview');
+        const editText = document.getElementById('edit-text');
+        editText.textContent = 'Редактирование сообщения';
+        editPreview.style.display = 'flex';
+
         const messageInput = document.getElementById('message-input');
         messageInput.value = message.content;
         messageInput.focus();
-
-        const sendButton = document.getElementById('send-button');
-        const originalSend = sendButton.onclick;
-        sendButton.onclick = () => {
-            const newContent = messageInput.value.trim();
-            if (newContent) {
-                const chats = JSON.parse(localStorage.getItem('chats') || '{}');
-                const messages = chats[currentChatContact.index] || [];
-                const messageIndex = messages.findIndex(msg => msg.timestamp === message.timestamp && msg.sender === 'user');
-                if (messageIndex !== -1) {
-                    messages[messageIndex].content = newContent;
-                    chats[currentChatContact.index] = messages;
-                    localStorage.setItem('chats', JSON.stringify(chats));
-                    loadMessages(currentChatContact.index);
-                }
-            }
-            messageInput.value = '';
-            sendButton.onclick = originalSend;
-        };
     } else if (action === 'delete-message' && message.sender === 'user') {
         const chats = JSON.parse(localStorage.getItem('chats') || '{}');
         const messages = chats[currentChatContact.index] || [];
