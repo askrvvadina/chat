@@ -1,28 +1,22 @@
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Main app initialized');
 
-    // Set up UI components
     setupTopMenu();
     setupSidebar();
     setupMainView();
     setupEventListeners();
     setupChatInterface();
 
-    // Initialize with default view (chats)
     showChatView();
-
-    // Load contacts and groups into sidebar
     loadChatsInSidebar();
-
-    // Theme handling
     initializeTheme();
 });
 
-// Global state for selection mode and current chat
 let isSelectionMode = false;
 let currentChatContact = null;
+let isOnline = true;
+let isContactOnline = true;
 
-// Set up the top menu components
 function setupTopMenu() {
     const menuDots = document.getElementById('menu-dots');
     const dropdownMenu = document.getElementById('dropdown-menu');
@@ -59,7 +53,6 @@ function setupTopMenu() {
     }
 }
 
-// Toggle selection mode
 function toggleSelectionMode() {
     isSelectionMode = !isSelectionMode;
     const selectionActions = document.querySelector('.selection-actions');
@@ -74,12 +67,11 @@ function toggleSelectionMode() {
         selectionActions.style.display = 'none';
         checkboxes.forEach(checkbox => {
             checkbox.style.display = 'none';
-            checkbox.checked = false; // Reset selection
+            checkbox.checked = false;
         });
     }
 }
 
-// Delete selected contacts
 function deleteSelectedContacts() {
     const checkboxes = document.querySelectorAll('.contact-checkbox:checked');
     const indices = Array.from(checkboxes).map(checkbox => parseInt(checkbox.dataset.index));
@@ -90,57 +82,48 @@ function deleteSelectedContacts() {
     }
 
     let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
-    indices.sort((a, b) => b - a); // Sort descending to avoid index issues
+    indices.sort((a, b) => b - a);
     indices.forEach(index => {
         contacts.splice(index, 1);
     });
     localStorage.setItem('chatContacts', JSON.stringify(contacts));
     loadChatsInSidebar();
-    toggleSelectionMode(); // Exit selection mode after deletion
+    toggleSelectionMode();
 }
 
-// Set up sidebar navigation
 function setupSidebar() {
-    // Add click event for contacts and groups icons
     const contactsIcon = document.getElementById('contacts-icon');
     const groupsIcon = document.getElementById('groups-icon');
 
     if (contactsIcon) {
         contactsIcon.addEventListener('click', function () {
             openModal('newContact.html', 'contactModal');
-            activateSection('chats'); // Stay on chats section
+            activateSection('chats');
         });
     }
 
     if (groupsIcon) {
         groupsIcon.addEventListener('click', function () {
             openModal('newGroup.html', 'groupModal');
-            activateSection('chats'); // Stay on chats section
+            activateSection('chats');
         });
     }
 
-    // Add click event for contacts to open chat
-    loadChatsInSidebar(); // Ensure contacts are loaded to attach listeners
+    loadChatsInSidebar();
 
-    // Add event listener for delete button
     const deleteButton = document.getElementById('delete-selected');
     if (deleteButton) {
         deleteButton.addEventListener('click', deleteSelectedContacts);
     }
 
-    // Add event listener for cancel button
     const cancelButton = document.getElementById('cancel-selection');
     if (cancelButton) {
         cancelButton.addEventListener('click', toggleSelectionMode);
     }
 }
 
-// Set up main content area
-function setupMainView() {
-    // This function is now handled in setupSidebar for the icons
-}
+function setupMainView() { }
 
-// Set up chat interface
 function setupChatInterface() {
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message-input');
@@ -151,13 +134,14 @@ function setupChatInterface() {
     const emojiPicker = document.getElementById('emoji-picker');
     const infoIcon = document.getElementById('info-icon');
     const rightPanel = document.getElementById('right-panel');
+    const photoModal = document.getElementById('photo-modal');
+    const fullScreenPhoto = document.getElementById('full-screen-photo');
+    const closePhoto = document.getElementById('close-photo');
 
-    // Send message on button click
     if (sendButton) {
         sendButton.addEventListener('click', sendMessage);
     }
 
-    // Send message on Enter key
     if (messageInput) {
         messageInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
@@ -166,29 +150,26 @@ function setupChatInterface() {
         });
     }
 
-    // Trigger file input on attach icon click
     if (attachIcon && fileInput) {
         attachIcon.addEventListener('click', function () {
             fileInput.click();
         });
     }
 
-    // Handle file attachment
     if (fileInput) {
-        fileInput.addEventListener('change', function () {
-            const file = this.files[0];
+        fileInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
             if (file) {
                 sendAttachment(file);
             }
-            this.value = ''; // Reset file input
+            event.target.value = '';
         });
     }
 
-    // Emoji picker functionality
     if (emojiIcon && emojiPickerContainer && emojiPicker) {
         emojiIcon.addEventListener('click', function (e) {
             e.stopPropagation();
-            emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'none' ? ' religblock' : 'none';
+            emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'none' ? 'block' : 'none';
         });
 
         emojiPicker.addEventListener('emoji-click', function (event) {
@@ -198,7 +179,6 @@ function setupChatInterface() {
             }
         });
 
-        // Close emoji picker when clicking outside
         document.addEventListener('click', function (event) {
             if (!emojiIcon.contains(event.target) && !emojiPickerContainer.contains(event.target)) {
                 emojiPickerContainer.style.display = 'none';
@@ -206,33 +186,49 @@ function setupChatInterface() {
         });
     }
 
-    // Toggle right panel
     if (infoIcon && rightPanel) {
         infoIcon.addEventListener('click', function () {
             rightPanel.style.display = rightPanel.style.display === 'none' ? 'block' : 'none';
         });
     }
+
+    if (closePhoto && photoModal) {
+        closePhoto.addEventListener('click', function () {
+            photoModal.style.display = 'none';
+        });
+    }
 }
 
-// Send a text message
 function sendMessage() {
     const messageInput = document.getElementById('message-input');
     const messageText = messageInput.value.trim();
 
     if (messageText === '' || !currentChatContact) return;
 
+    if (!isOnline) {
+        const message = {
+            type: 'text',
+            content: messageText,
+            sender: 'user',
+            status: 'Failed',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        addMessageToChat(message);
+        saveMessage(currentChatContact.index, message);
+        return;
+    }
+
     const message = {
         type: 'text',
         content: messageText,
         sender: 'user',
-        status: 'Sent',
+        status: isContactOnline ? 'Delivered' : 'Sent',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     addMessageToChat(message);
     saveMessage(currentChatContact.index, message);
 
-    // Simulate received message (for demo purposes)
     setTimeout(() => {
         const receivedMessage = {
             type: 'text',
@@ -243,42 +239,60 @@ function sendMessage() {
         };
         addMessageToChat(receivedMessage);
         saveMessage(currentChatContact.index, receivedMessage);
-    }, 1000);
+
+        updateMessageStatus(currentChatContact.index, message.timestamp, 'Read');
+    }, 2000);
 
     messageInput.value = '';
 }
 
-// Send an attachment (photo, video, document)
 function sendAttachment(file) {
-    if (!currentChatContact) return;
+    if (!currentChatContact) {
+        alert('Please select a contact to send the file to.');
+        return;
+    }
+
+    if (!isOnline) {
+        const message = {
+            type: 'text',
+            content: 'Failed to send attachment: No internet connection',
+            sender: 'user',
+            status: 'Failed',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        addMessageToChat(message);
+        saveMessage(currentChatContact.index, message);
+        return;
+    }
 
     const message = {
         type: '',
         content: '',
         sender: 'user',
-        status: 'Sent',
+        status: isContactOnline ? 'Delivered' : 'Sent',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     const reader = new FileReader();
     reader.onload = function (e) {
+        const dataUrl = e.target.result;
+
         if (file.type.startsWith('image/')) {
             message.type = 'image';
-            message.content = e.target.result;
+            message.content = dataUrl;
         } else if (file.type.startsWith('video/')) {
             message.type = 'video';
-            message.content = e.target.result;
+            message.content = dataUrl;
         } else {
-            // Handle all other file types as documents
             message.type = 'document';
             message.content = file.name;
-            message.fileData = e.target.result; // Store file data for download
+            message.fileData = dataUrl;
+            message.fileType = file.type;
         }
 
         addMessageToChat(message);
         saveMessage(currentChatContact.index, message);
 
-        // Simulate received message (for demo purposes)
         setTimeout(() => {
             const receivedMessage = {
                 type: 'text',
@@ -289,21 +303,74 @@ function sendAttachment(file) {
             };
             addMessageToChat(receivedMessage);
             saveMessage(currentChatContact.index, receivedMessage);
-        }, 1000);
+
+            updateMessageStatus(currentChatContact.index, message.timestamp, 'Read');
+        }, 2000);
     };
     reader.onerror = function () {
         console.error('Error reading file:', file.name);
+        alert('Failed to read the file. Please try again.');
     };
     reader.readAsDataURL(file);
 }
 
-// Add message to chat body
 function addMessageToChat(message) {
     const chatBody = document.getElementById('chat-body');
     if (!chatBody) return;
 
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.sender === 'user' ? 'sent' : 'received'}`;
+    messageDiv.dataset.timestamp = message.timestamp;
+
+    const dropdownIcon = document.createElement('img');
+    dropdownIcon.src = 'images/dropdown.png';
+    dropdownIcon.className = 'dropdown-icon';
+    dropdownIcon.alt = 'Options';
+    messageDiv.appendChild(dropdownIcon);
+
+    const messageMenu = document.createElement('div');
+    messageMenu.className = 'message-menu';
+    const menuList = document.createElement('ul');
+
+    if (message.sender === 'user') {
+        menuList.innerHTML = `
+            <li class="copy-message"><img src="images/copy.png" alt="Copy"> Copy</li>
+            <li class="edit-message"><img src="images/edit.png" alt="Edit"> Edit</li>
+            <li class="delete-message"><img src="images/delete.png" alt="Delete"> Delete</li>
+            <li class="reply-message"><img src="images/reply.png" alt="Reply"> Reply</li>
+        `;
+    } else {
+        menuList.innerHTML = `
+            <li class="copy-message"><img src="images/copy.png" alt="Copy"> Copy</li>
+            <li class="reply-message"><img src="images/reply.png" alt="Reply"> Reply</li>
+        `;
+    }
+    messageMenu.appendChild(menuList);
+    messageDiv.appendChild(messageMenu);
+
+    dropdownIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.message-menu').forEach(menu => {
+            if (menu !== messageMenu) menu.classList.remove('active');
+        });
+        messageMenu.classList.toggle('active');
+        adjustMenuPosition(messageDiv, messageMenu);
+    });
+
+    menuList.querySelectorAll('li').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const action = item.className;
+            handleMessageAction(action, message, messageDiv);
+            messageMenu.classList.remove('active');
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!dropdownIcon.contains(event.target) && !messageMenu.contains(event.target)) {
+            messageMenu.classList.remove('active');
+        }
+    });
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
@@ -313,6 +380,15 @@ function addMessageToChat(message) {
     } else if (message.type === 'image') {
         const img = document.createElement('img');
         img.src = message.content;
+        img.alt = 'Chat image';
+        img.addEventListener('click', function () {
+            const photoModal = document.getElementById('photo-modal');
+            const fullScreenPhoto = document.getElementById('full-screen-photo');
+            if (photoModal && fullScreenPhoto) {
+                fullScreenPhoto.src = this.src;
+                photoModal.style.display = 'flex';
+            }
+        });
         contentDiv.appendChild(img);
     } else if (message.type === 'video') {
         const video = document.createElement('video');
@@ -323,12 +399,13 @@ function addMessageToChat(message) {
         const docDiv = document.createElement('div');
         docDiv.className = 'document';
         const icon = document.createElement('img');
-        icon.src = 'chat-app/frontend/images/dowload.png';
+        icon.src = 'images/download.png';
         icon.alt = 'Download';
         const link = document.createElement('a');
-        link.href = message.fileData || '#';
+        link.href = message.fileData;
         link.download = message.content;
         link.textContent = message.content;
+        link.setAttribute('data-filetype', message.fileType);
         docDiv.appendChild(icon);
         docDiv.appendChild(link);
         contentDiv.appendChild(docDiv);
@@ -344,28 +421,116 @@ function addMessageToChat(message) {
     timestampSpan.textContent = message.timestamp;
     metaDiv.appendChild(timestampSpan);
 
-    const statusDiv = document.createElement('div');
-    statusDiv.className = 'status-ticks';
-    const statusIcon = document.createElement('img');
     if (message.sender === 'user') {
-        if (message.status === 'Sent') {
-            statusIcon.src = 'chat-app/frontend/images/single-tick.png'; // Single tick for sent
-        } else if (message.status === 'Delivered') {
-            statusIcon.src = 'chat-app/frontend/images/double-tick.png'; // Double tick for delivered
-        } else if (message.status === 'Read') {
-            statusIcon.src = 'chat-app/frontend/images/double-tick-read.png'; // Double blue tick for read
+        if (message.status === 'Failed') {
+            const noInternetIcon = document.createElement('img');
+            noInternetIcon.src = 'images/no-internet.png';
+            noInternetIcon.className = 'no-internet-icon';
+            noInternetIcon.alt = 'No Internet';
+            metaDiv.appendChild(noInternetIcon);
+        } else {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'status-ticks';
+            const statusIcon = document.createElement('img');
+            if (message.status === 'Sent') {
+                statusIcon.src = 'images/single-tick-gray.png';
+            } else if (message.status === 'Delivered') {
+                statusIcon.src = 'images/double-tick-gray.png';
+            } else if (message.status === 'Read') {
+                statusIcon.src = 'images/double-tick-green.png';
+                const seenText = document.createElement('span');
+                seenText.className = 'seen-text';
+                seenText.textContent = 'Seen just now';
+                metaDiv.appendChild(seenText);
+            }
+            statusDiv.appendChild(statusIcon);
+            metaDiv.appendChild(statusDiv);
         }
     }
-    statusDiv.appendChild(statusIcon);
-    metaDiv.appendChild(statusDiv);
 
     messageDiv.appendChild(metaDiv);
 
     chatBody.appendChild(messageDiv);
-    chatBody.scrollTop = chatBody.scrollHeight; // Scroll to bottom
+    chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// Save message to localStorage
+function adjustMenuPosition(messageDiv, messageMenu) {
+    const messageRect = messageDiv.getBoundingClientRect();
+    const chatBodyRect = document.getElementById('chat-body').getBoundingClientRect();
+    const menuRect = messageMenu.getBoundingClientRect();
+
+    if (messageDiv.classList.contains('sent')) {
+        messageMenu.style.right = 'auto';
+        messageMenu.style.left = `-${menuRect.width + 10}px`;
+    } else {
+        messageMenu.style.left = 'auto';
+        messageMenu.style.right = `-${menuRect.width + 10}px`;
+    }
+
+    if (messageRect.top - chatBodyRect.top + menuRect.height > chatBodyRect.height) {
+        messageMenu.style.top = 'auto';
+        messageMenu.style.bottom = '0';
+    } else {
+        messageMenu.style.top = '10px';
+        messageMenu.style.bottom = 'auto';
+    }
+}
+
+function handleMessageAction(action, message, messageDiv) {
+    if (action === 'copy-message') {
+        navigator.clipboard.writeText(message.type === 'text' ? message.content : message.fileData || message.content);
+    } else if (action === 'edit-message' && message.sender === 'user') {
+        const messageInput = document.getElementById('message-input');
+        messageInput.value = message.content;
+        messageInput.focus();
+
+        const sendButton = document.getElementById('send-button');
+        const originalSend = sendButton.onclick;
+        sendButton.onclick = () => {
+            const newContent = messageInput.value.trim();
+            if (newContent) {
+                const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+                const messages = chats[currentChatContact.index] || [];
+                const messageIndex = messages.findIndex(msg => msg.timestamp === message.timestamp && msg.sender === 'user');
+                if (messageIndex !== -1) {
+                    messages[messageIndex].content = newContent;
+                    chats[currentChatContact.index] = messages;
+                    localStorage.setItem('chats', JSON.stringify(chats));
+                    loadMessages(currentChatContact.index);
+                }
+            }
+            messageInput.value = '';
+            sendButton.onclick = originalSend;
+        };
+    } else if (action === 'delete-message' && message.sender === 'user') {
+        const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+        const messages = chats[currentChatContact.index] || [];
+        const messageIndex = messages.findIndex(msg => msg.timestamp === message.timestamp && msg.sender === 'user');
+        if (messageIndex !== -1) {
+            messages.splice(messageIndex, 1);
+            chats[currentChatContact.index] = messages;
+            localStorage.setItem('chats', JSON.stringify(chats));
+            loadMessages(currentChatContact.index);
+        }
+    } else if (action === 'reply-message') {
+        const messageInput = document.getElementById('message-input');
+        messageInput.value = `Replying to: "${message.content}"\n`;
+        messageInput.focus();
+    }
+}
+
+function updateMessageStatus(contactIndex, timestamp, newStatus) {
+    const chats = JSON.parse(localStorage.getItem('chats') || '{}');
+    const messages = chats[contactIndex] || [];
+    const messageIndex = messages.findIndex(msg => msg.timestamp === timestamp && msg.sender === 'user');
+    if (messageIndex !== -1) {
+        messages[messageIndex].status = newStatus;
+        chats[contactIndex] = messages;
+        localStorage.setItem('chats', JSON.stringify(chats));
+        loadMessages(contactIndex);
+    }
+}
+
 function saveMessage(contactIndex, message) {
     const chats = JSON.parse(localStorage.getItem('chats') || '{}');
     if (!chats[contactIndex]) {
@@ -375,7 +540,6 @@ function saveMessage(contactIndex, message) {
     localStorage.setItem('chats', JSON.stringify(chats));
 }
 
-// Load messages for a contact
 function loadMessages(contactIndex) {
     const chats = JSON.parse(localStorage.getItem('chats') || '{}');
     const messages = chats[contactIndex] || [];
@@ -386,7 +550,6 @@ function loadMessages(contactIndex) {
     }
 }
 
-// Set up general event listeners
 function setupEventListeners() {
     const searchInput = document.getElementById('search');
     if (searchInput) {
@@ -400,11 +563,9 @@ function setupEventListeners() {
         });
     }
 
-    // Listen for messages from modal iframes
     window.addEventListener('message', handleModalMessage);
 }
 
-// Handle messages from iframes
 function handleModalMessage(event) {
     console.log('Message received:', event.data);
 
@@ -425,7 +586,7 @@ function handleModalMessage(event) {
             name: 'Nurtilek Abibillaev',
             email: 'nurtilek@example.com',
             password: '',
-            avatar: 'chat-app/frontend/images/avatar.png'
+            avatar: 'images/avatar.png'
         });
         const modal = document.getElementById('profileModal');
         if (modal) {
@@ -438,9 +599,20 @@ function handleModalMessage(event) {
         const userData = event.data.data;
         updateProfileSection(userData);
     }
+
+    if (event.data && event.data.type === 'toggleTheme') {
+        const isDarkTheme = event.data.isDarkTheme;
+        localStorage.setItem('darkTheme', isDarkTheme);
+        if (isDarkTheme) {
+            document.body.classList.add('dark-theme');
+            document.querySelector('.theme-icon').src = 'images/sun.png';
+        } else {
+            document.body.classList.remove('dark-theme');
+            document.querySelector('.theme-icon').src = 'images/moon.png';
+        }
+    }
 }
 
-// Update profile section in the sidebar
 function updateProfileSection(userData) {
     const userInfo = document.querySelector('.user-info');
     const userAvatar = document.querySelector('.user-avatar img');
@@ -451,7 +623,6 @@ function updateProfileSection(userData) {
     }
 }
 
-// Show chats view in main area
 function showChatView() {
     const chatContainer = document.querySelector('.chat-container');
     if (!chatContainer) return;
@@ -463,12 +634,10 @@ function showChatView() {
         chatAppLogo.style.display = 'none';
         chatView.style.display = 'flex';
 
-        // Update chat header with contact info
         document.getElementById('chat-contact-name').textContent = currentChatContact.name;
-        document.getElementById('chat-contact-avatar').src = currentChatContact.photo || 'chat-app/frontend/images/avatar.png';
-        document.getElementById('chat-contact-status').textContent = 'Last seen recently';
+        document.getElementById('chat-contact-avatar').src = currentChatContact.photo || 'images/avatar.png';
+        document.getElementById('chat-contact-status').textContent = isContactOnline ? 'Online' : 'Last seen recently';
 
-        // Load messages
         loadMessages(currentChatContact.index);
     } else {
         chatAppLogo.style.display = 'flex';
@@ -476,13 +645,11 @@ function showChatView() {
     }
 }
 
-// Load chats/contacts/groups in the sidebar
 function loadChatsInSidebar() {
     const sidebarChats = document.querySelector('.chats-list');
     const sidebarContacts = document.querySelector('.contacts-list');
     const sidebarGroups = document.querySelector('.groups-list');
 
-    // Load chats (contacts and groups combined)
     if (sidebarChats) {
         sidebarChats.innerHTML = '';
         const savedContacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
@@ -490,7 +657,6 @@ function loadChatsInSidebar() {
             const chatItem = createContactElement(contact, index);
             chatItem.classList.add('contact-chat-item');
             chatItem.dataset.id = index;
-            // Add click event to open chat
             chatItem.addEventListener('click', () => {
                 if (!isSelectionMode) {
                     currentChatContact = {
@@ -517,17 +683,14 @@ function loadChatsInSidebar() {
         }
     }
 
-    // Load contacts section
     if (sidebarContacts) {
         loadContactsToSidebar(sidebarContacts);
     }
 
-    // Load groups section
     if (sidebarGroups) {
         loadGroupsToSidebar(sidebarGroups);
     }
 
-    // Reset selection mode UI
     const selectionActions = document.querySelector('.selection-actions');
     const checkboxes = document.querySelectorAll('.contact-checkbox');
     if (isSelectionMode) {
@@ -544,7 +707,6 @@ function loadChatsInSidebar() {
     }
 }
 
-// Load contacts into the sidebar
 function loadContactsToSidebar(container) {
     const contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
     container.innerHTML = '';
@@ -558,7 +720,6 @@ function loadContactsToSidebar(container) {
     });
 }
 
-// Load groups into the sidebar
 function loadGroupsToSidebar(container) {
     const groups = JSON.parse(localStorage.getItem('chatGroups') || '[]');
     container.innerHTML = '';
@@ -572,13 +733,12 @@ function loadGroupsToSidebar(container) {
     });
 }
 
-// Create contact element with checkbox
 function createContactElement(contact, index) {
     const contactDiv = document.createElement('div');
     contactDiv.className = 'contact-item';
 
     const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim();
-    const photo = contact.photo || 'chat-app/frontend/images/avatar.png';
+    const photo = contact.photo || 'images/avatar.png';
 
     contactDiv.innerHTML = `
         <input type="checkbox" class="contact-checkbox" data-index="${index}" style="display: none;">
@@ -593,7 +753,6 @@ function createContactElement(contact, index) {
     return contactDiv;
 }
 
-// Create group element
 function createGroupElement(group) {
     const groupDiv = document.createElement('div');
     groupDiv.className = 'group-item';
@@ -612,7 +771,6 @@ function createGroupElement(group) {
     return groupDiv;
 }
 
-// Filter sidebar items based on search term
 function filterSidebarItems(searchTerm) {
     const chatItems = document.querySelectorAll('.contact-item, .group-item');
 
@@ -629,7 +787,6 @@ function filterSidebarItems(searchTerm) {
     });
 }
 
-// Reset sidebar filters
 function resetSidebarFilters() {
     const chatItems = document.querySelectorAll('.contact-item, .group-item');
     chatItems.forEach(item => {
@@ -637,7 +794,6 @@ function resetSidebarFilters() {
     });
 }
 
-// Function to change active section in sidebar
 function activateSection(section) {
     document.querySelectorAll('.section').forEach(el => {
         el.classList.remove('active');
@@ -649,7 +805,6 @@ function activateSection(section) {
     }
 }
 
-// Function to handle opening modals
 function openModal(url, modalId) {
     const modalOverlay = document.createElement('div');
     modalOverlay.id = modalId;
@@ -663,40 +818,44 @@ function openModal(url, modalId) {
 
     document.body.appendChild(modalOverlay);
     document.body.style.overflow = 'hidden';
+
+    const iframe = modalOverlay.querySelector('iframe');
+    iframe.addEventListener('load', () => {
+        const isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+        iframe.contentWindow.postMessage({ type: 'toggleTheme', isDarkTheme }, '*');
+    });
 }
 
-// Initialize theme
 function initializeTheme() {
     const themeToggle = document.getElementById('theme-toggle');
-    if (!themeToggle) return;
+    const themeIcon = document.querySelector('.theme-icon');
+    if (!themeToggle || !themeIcon) return;
 
-    if (typeof lottie !== 'undefined') {
-        const themeAnimation = lottie.loadAnimation({
-            container: themeToggle,
-            renderer: 'svg',
-            loop: false,
-            autoplay: false,
-            path: 'images/Switch-Theme.lottie'
-        });
+    let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
 
-        let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+    if (isDarkTheme) {
+        document.body.classList.add('dark-theme');
+        themeIcon.src = 'images/sun.png';
+    } else {
+        document.body.classList.remove('dark-theme');
+        themeIcon.src = 'images/moon.png';
+    }
+
+    themeToggle.addEventListener('click', function () {
+        isDarkTheme = !isDarkTheme;
+        localStorage.setItem('darkTheme', isDarkTheme);
 
         if (isDarkTheme) {
             document.body.classList.add('dark-theme');
-            themeAnimation.goToAndStop(themeAnimation.totalFrames - 1, true);
+            themeIcon.src = 'images/sun.png';
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeIcon.src = 'images/moon.png';
         }
 
-        themeToggle.addEventListener('click', function () {
-            isDarkTheme = !isDarkTheme;
-            localStorage.setItem('darkTheme', isDarkTheme);
-
-            if (isDarkTheme) {
-                document.body.classList.add('dark-theme');
-                themeAnimation.playSegments([0, themeAnimation.totalFrames], true);
-            } else {
-                document.body.classList.remove('dark-theme');
-                themeAnimation.playSegments([themeAnimation.totalFrames, 0], true);
-            }
+        const modals = document.querySelectorAll('.modal-overlay iframe');
+        modals.forEach(iframe => {
+            iframe.contentWindow.postMessage({ type: 'toggleTheme', isDarkTheme }, '*');
         });
-    }
+    });
 }

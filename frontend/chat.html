@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <link rel="stylesheet" href="styles/chat.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
-    <!-- Add emoji-picker-element library -->
     <script src="https://unpkg.com/emoji-picker-element@latest/dist/index.js" type="module"></script>
 </head>
 
@@ -16,18 +14,21 @@
         <div class="sidebar">
             <div class="profile-section">
                 <div class="user-avatar">
-                    <img src="chat-app/frontend/images/avatar.png" alt="User Avatar">
+                    <img src="images/avatar.png" alt="User Avatar">
                 </div>
                 <div class="user-info">
                     <h3>Nurtilek Abibillaev</h3>
                     <p class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__"
-                            data-cfemail="37794245435e5b525c77524f565a475b521954585a">[email protected]</a></p>
+                            data-cfemail="37794245435e5b525c77524f565a475b521954585a">[email&#160;protected]</a></p>
                 </div>
                 <div class="menu-actions">
                     <div class="menu-dots" id="menu-dots">
                         <span></span>
                         <span></span>
                         <span></span>
+                    </div>
+                    <div class="theme-toggle" id="theme-toggle">
+                        <img src="images/moon.png" alt="Toggle Theme" class="theme-icon">
                     </div>
                     <div class="dropdown-menu" id="dropdown-menu">
                         <ul>
@@ -78,8 +79,7 @@
                     <div class="chat-header">
                         <div class="chat-contact-info">
                             <div class="contact-avatar">
-                                <img src="chat-app/frontend/images/avatar.png" alt="Contact Avatar"
-                                    id="chat-contact-avatar">
+                                <img src="images/avatar.png" alt="Contact Avatar" id="chat-contact-avatar">
                             </div>
                             <div class="contact-details">
                                 <h3 id="chat-contact-name">Contact Name</h3>
@@ -87,9 +87,8 @@
                             </div>
                         </div>
                         <div class="chat-actions">
-                            <img src="chat-app/frontend/images/call.png" alt="Call" class="action-icon call-icon">
-                            <img src="chat-app/frontend/images/info.png" alt="Info" class="action-icon info-icon"
-                                id="info-icon">
+                            <img src="images/call.png" alt="Call" class="action-icon call-icon">
+                            <img src="images/info.png" alt="Info" class="action-icon info-icon" id="info-icon">
                         </div>
                     </div>
                     <div class="chat-body" id="chat-body">
@@ -97,12 +96,10 @@
                     </div>
                     <div class="chat-input">
                         <div class="input-actions">
-                            <img src="chat-app/frontend/images/attach.png" alt="Attach" class="action-icon attach-icon"
-                                id="attach-icon">
+                            <img src="images/attach.png" alt="Attach" class="action-icon attach-icon" id="attach-icon">
                             <input type="file" id="file-input" style="display: none;"
-                                accept="image/*,video/*,application/pdf,.doc,.docx">
-                            <img src="chat-app/frontend/images/emoji.png" alt="Emoji" class="action-icon emoji-icon"
-                                id="emoji-icon">
+                                accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                            <img src="images/emoji.png" alt="Emoji" class="action-icon emoji-icon" id="emoji-icon">
                             <div class="emoji-picker-container" id="emoji-picker-container" style="display: none;">
                                 <emoji-picker id="emoji-picker"></emoji-picker>
                             </div>
@@ -116,12 +113,12 @@
                 <div class="panel-content">
                     <h4>Shared photos</h4>
                     <div class="shared-item">
-                        <img src="chat-app/frontend/images/dowload.png" alt="Download" class="download-icon">
+                        <img src="images/download.png" alt="Download" class="download-icon">
                         <p>photo_20-04-2025.png <a href="#">Download</a></p>
                     </div>
                     <h4>Shared files</h4>
                     <div class="shared-item">
-                        <img src="chat-app/frontend/images/dowload.png" alt="Download" class="download-icon">
+                        <img src="images/download.png" alt="Download" class="download-icon">
                         <p>file_20-04-2025.pdf <a href="#">Download</a></p>
                     </div>
                     <button class="block-button">Block user</button>
@@ -129,8 +126,14 @@
             </div>
         </div>
     </div>
+    <div class="photo-modal" id="photo-modal" style="display: none;">
+        <span class="close-photo" id="close-photo">×</span>
+        <img id="full-screen-photo" src="" alt="Full-screen photo">
+    </div>
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="js/chat.js"></script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9345dfc43fe7138e',t:'MTc0NTMzMjgwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'934bcfda9921b029',t:'MTc0NTM5NTA2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>
 
 </html>

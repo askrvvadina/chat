@@ -1,84 +1,151 @@
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('New Group modal initialized');
+
+    setupEventListeners();
+    loadContacts();
+    initializeTheme();
+});
+
+function setupEventListeners() {
     const cancelBtn = document.querySelector('.cancel-btn');
     const saveBtn = document.querySelector('.save-btn');
+    const groupNameInput = document.getElementById('group-name');
     const groupPhotoInput = document.getElementById('group-photo');
     const photoPlaceholder = document.querySelector('.photo-placeholder');
-    const groupNameInput = document.getElementById('group-name');
-    const contactsList = document.querySelector('.contacts-list');
+    const subgroupSection = document.querySelector('.subgroup-section');
 
-    // Load contacts from localStorage
-    const contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
-    contacts.forEach(contact => {
-        const contactElement = document.createElement('div');
-        contactElement.className = 'contact-item';
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            window.parent.postMessage('closeGroupModal', '*');
+        });
+    }
 
-        const initials = `${contact.firstName[0]}${contact.lastName[0]}`.toUpperCase();
-        contactElement.innerHTML = `
-            <div class="contact-avatar">${initials}</div>
-            <div class="contact-name">${contact.firstName} ${contact.lastName}</div>
-            <div class="checkbox" data-id="${contact.email}"></div>
-        `;
-        contactsList.appendChild(contactElement);
-    });
-
-    // Handle photo upload
-    photoPlaceholder.addEventListener('click', () => {
-        groupPhotoInput.click();
-    });
-
-    let photoDataUrl = null;
-    groupPhotoInput.addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                photoDataUrl = event.target.result;
-                photoPlaceholder.innerHTML = `<img src="${photoDataUrl}" alt="Group Photo" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">`;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Handle checkbox selection
-    contactsList.addEventListener('click', function (e) {
-        if (e.target.classList.contains('checkbox')) {
-            e.target.classList.toggle('checked');
-        }
-    });
-
-    // Handle cancel
-    cancelBtn.addEventListener('click', function () {
-        window.parent.postMessage('closeGroupModal', '*');
-    });
-
-    // Handle save
-    saveBtn.addEventListener('click', function () {
-        const groupName = groupNameInput.value.trim();
-        if (!groupName) {
-            alert('Please enter a group name.');
-            return;
-        }
-
-        const selectedMembers = [];
-        document.querySelectorAll('.checkbox.checked').forEach(checkbox => {
-            const email = checkbox.getAttribute('data-id');
-            const contact = contacts.find(c => c.email === email);
-            if (contact) {
-                selectedMembers.push(contact);
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function () {
+            const groupName = groupNameInput.value.trim();
+            if (!groupName) {
+                alert('Group name is required!');
+                return;
             }
+
+            const selectedContacts = Array.from(document.querySelectorAll('.contact-checkbox:checked')).map(checkbox => parseInt(checkbox.dataset.index));
+            const contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
+            const groupMembers = selectedContacts.map(index => contacts[index]);
+
+            const newGroup = {
+                name: groupName,
+                members: groupMembers,
+                photo: photoPlaceholder.querySelector('img').src === 'images/camera.png' ? 'images/group-icon.png' : photoPlaceholder.querySelector('img').src
+            };
+
+            const groups = JSON.parse(localStorage.getItem('chatGroups') || '[]');
+            groups.push(newGroup);
+            localStorage.setItem('chatGroups', JSON.stringify(groups));
+
+            window.parent.postMessage('refreshChatList', '*');
+            window.parent.postMessage('closeGroupModal', '*');
+        });
+    }
+
+    if (groupPhotoInput && photoPlaceholder) {
+        photoPlaceholder.addEventListener('click', function () {
+            groupPhotoInput.click();
         });
 
-        const newGroup = {
-            name: groupName,
-            photo: photoDataUrl || 'images/group-icon.png',
-            members: selectedMembers
-        };
+        groupPhotoInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = photoPlaceholder.querySelector('img');
+                    img.src = e.target.result;
+                    img.classList.remove('camera-icon');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 
-        const groups = JSON.parse(localStorage.getItem('chatGroups') || '[]');
-        groups.push(newGroup);
-        localStorage.setItem('chatGroups', JSON.stringify(groups));
+    if (subgroupSection) {
+        subgroupSection.addEventListener('click', function () {
+            alert('Subgroup creation coming soon!');
+        });
+    }
 
-        window.parent.postMessage('closeGroupModal', '*');
-        window.parent.postMessage('refreshChatList', '*');
+    window.addEventListener('message', function (event) {
+        console.log('New Group modal received message:', event.data);
+
+        if (event.data && event.data.type === 'toggleTheme') {
+            const isDarkTheme = event.data.isDarkTheme;
+            const themeIcon = document.querySelector('.theme-icon');
+            if (isDarkTheme) {
+                document.body.classList.add('dark-theme');
+                themeIcon.src = 'images/sun.png';
+            } else {
+                document.body.classList.remove('dark-theme');
+                themeIcon.src = 'images/moon.png';
+            }
+        }
     });
-});
+}
+
+function loadContacts() {
+    const contactsList = document.querySelector('.contacts-list');
+    const contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
+
+    if (contacts.length === 0) {
+        contactsList.innerHTML = '<div class="no-contacts">No contacts available</div>';
+        return;
+    }
+
+    contacts.forEach((contact, index) => {
+        const contactDiv = document.createElement('div');
+        contactDiv.className = 'contact-item';
+
+        const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim();
+        const photo = contact.photo || 'images/avatar.png';
+
+        contactDiv.innerHTML = `
+            <input type="checkbox" class="contact-checkbox" data-index="${index}">
+            <div class="contact-avatar">
+                <img src="${photo}" alt="${fullName}">
+            </div>
+            <div class="contact-info">
+                <div class="contact-name">${fullName}</div>
+            </div>
+        `;
+
+        contactsList.appendChild(contactDiv);
+    });
+}
+
+function initializeTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.querySelector('.theme-icon');
+    if (!themeToggle || !themeIcon) return;
+
+    let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+
+    if (isDarkTheme) {
+        document.body.classList.add('dark-theme');
+        themeIcon.src = 'images/sun.png';
+    } else {
+        document.body.classList.remove('dark-theme');
+        themeIcon.src = 'images/moon.png';
+    }
+
+    themeToggle.addEventListener('click', function () {
+        isDarkTheme = !isDarkTheme;
+        localStorage.setItem('darkTheme', isDarkTheme);
+
+        if (isDarkTheme) {
+            document.body.classList.add('dark-theme');
+            themeIcon.src = 'images/sun.png';
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeIcon.src = 'images/moon.png';
+        }
+
+        window.parent.postMessage({ type: 'toggleTheme', isDarkTheme }, '*');
+    });
+}

@@ -1,44 +1,119 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const cancelBtn = document.querySelector('.btn.cancel');
-    const saveBtn = document.querySelector('.btn.save');
-    const avatarImg = document.getElementById('avatar-img');
-    const userNameInput = document.getElementById('user-name');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
+    console.log('Profile modal initialized');
 
-    // Load current user data from parent window
+    setupEventListeners();
+    initializeTheme();
+
+    window.parent.postMessage({ type: 'requestUserData' }, '*');
+});
+
+function setupEventListeners() {
+    const cancelBtn = document.getElementById('cancel-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const avatarInput = document.getElementById('avatar-input');
+    const changeAvatarBtn = document.getElementById('change-avatar-btn');
+    const avatarImg = document.getElementById('avatar-img');
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            window.parent.postMessage('closeProfileModal', '*');
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function () {
+            const nameInput = document.getElementById('user-name');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            const userData = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim(),
+                password: passwordInput.value.trim(),
+                avatar: avatarImg.src
+            };
+
+            if (!userData.name || !userData.email) {
+                alert('Name and email are required!');
+                return;
+            }
+
+            localStorage.setItem('userProfile', JSON.stringify(userData));
+            window.parent.postMessage({ type: 'updateUserProfile', data: userData }, '*');
+            window.parent.postMessage('closeProfileModal', '*');
+        });
+    }
+
+    if (changeAvatarBtn && avatarInput) {
+        changeAvatarBtn.addEventListener('click', function () {
+            avatarInput.click();
+        });
+    }
+
+    if (avatarInput && avatarImg) {
+        avatarInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    avatarImg.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
     window.addEventListener('message', function (event) {
+        console.log('Profile modal received message:', event.data);
+
         if (event.data && event.data.type === 'userData') {
             const userData = event.data.data;
-            avatarImg.src = userData.avatar || 'images/avatar.png';
-            userNameInput.value = userData.name || '';
-            emailInput.value = userData.email || '';
-            passwordInput.value = userData.password || '';
+            document.getElementById('user-name').value = userData.name || '';
+            document.getElementById('email').value = userData.email || '';
+            document.getElementById('avatar-img').src = userData.avatar || 'images/avatar.png';
+        }
+
+        if (event.data && event.data.type === 'toggleTheme') {
+            const isDarkTheme = event.data.isDarkTheme;
+            const themeIcon = document.querySelector('.theme-icon');
+            if (isDarkTheme) {
+                document.body.classList.add('dark-theme');
+                themeIcon.src = 'images/sun.png';
+            } else {
+                document.body.classList.remove('dark-theme');
+                themeIcon.src = 'images/moon.png';
+            }
         }
     });
+}
 
-    // Request user data from parent window
-    window.parent.postMessage({ type: 'requestUserData' }, '*');
+function initializeTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.querySelector('.theme-icon');
+    if (!themeToggle || !themeIcon) return;
 
-    // Close modal on cancel
-    cancelBtn.addEventListener('click', function () {
-        window.parent.postMessage('closeProfileModal', '*');
+    let isDarkTheme = localStorage.getItem('darkTheme') === 'true';
+
+    if (isDarkTheme) {
+        document.body.classList.add('dark-theme');
+        themeIcon.src = 'images/sun.png';
+    } else {
+        document.body.classList.remove('dark-theme');
+        themeIcon.src = 'images/moon.png';
+    }
+
+    themeToggle.addEventListener('click', function () {
+        isDarkTheme = !isDarkTheme;
+        localStorage.setItem('darkTheme', isDarkTheme);
+
+        if (isDarkTheme) {
+            document.body.classList.add('dark-theme');
+            themeIcon.src = 'images/sun.png';
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeIcon.src = 'images/moon.png';
+        }
+
+        window.parent.postMessage({ type: 'toggleTheme', isDarkTheme }, '*');
     });
-
-    // Save changes and close modal
-    saveBtn.addEventListener('click', function () {
-        const updatedUserData = {
-            name: userNameInput.value || 'Nurtilek Abibillaev',
-            email: emailInput.value || 'nurtilek@example.com',
-            password: passwordInput.value || '',
-            avatar: avatarImg.src
-        };
-
-        // Save to localStorage
-        localStorage.setItem('userProfile', JSON.stringify(updatedUserData));
-
-        // Notify parent to update UI and close modal
-        window.parent.postMessage({ type: 'updateUserProfile', data: updatedUserData }, '*');
-        window.parent.postMessage('closeProfileModal', '*');
-    });
-});
+}

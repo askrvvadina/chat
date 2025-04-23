@@ -20,6 +20,14 @@ body {
     transition: all 0.3s ease;
 }
 
+body.dark-theme {
+    background-color: #1a1a1a;
+    background-image: url('../images/darkBack.jpg');
+    background-size: cover;
+    background-position: center;
+    color: #f5f5f5;
+}
+
 .app-container {
     display: flex;
     height: 100vh;
@@ -80,6 +88,7 @@ body {
     display: flex;
     align-items: center;
     position: relative;
+    gap: 10px;
 }
 
 .menu-dots {
@@ -98,6 +107,25 @@ body {
     background-color: #555;
     border-radius: 50%;
     margin: 1px 0;
+}
+
+.theme-toggle {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover .theme-icon {
+    transform: scale(1.1);
 }
 
 .dropdown-menu {
@@ -216,7 +244,6 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /* Center items horizontally */
 }
 
 .chat-logo {
@@ -275,15 +302,47 @@ body {
 
 .chat-actions {
     display: flex;
-    gap: 10px;
+    gap: 15px;
 }
 
 .call-icon,
 .info-icon,
 .attach-icon,
 .emoji-icon {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.call-icon:hover,
+.info-icon:hover,
+.attach-icon:hover,
+.emoji-icon:hover {
+    background-color: rgba(0, 123, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+body.dark-theme .call-icon,
+body.dark-theme .info-icon,
+body.dark-theme .attach-icon,
+body.dark-theme .emoji-icon {
+    background-color: rgba(61, 61, 61, 0.5);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .call-icon:hover,
+body.dark-theme .info-icon:hover,
+body.dark-theme .attach-icon:hover,
+body.dark-theme .emoji-icon:hover {
+    background-color: rgba(0, 123, 255, 0.4);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .chat-body {
@@ -293,6 +352,12 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.chat-body::-webkit-scrollbar {
+    display: none;
 }
 
 .message {
@@ -322,6 +387,7 @@ body {
     border-radius: 10px;
     margin-top: 5px;
     object-fit: contain;
+    cursor: pointer;
 }
 
 .message .document {
@@ -340,9 +406,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    font-size: 10px;
-    color: #888;
+    font-size: 11px;
+    font-family: 'Roboto', sans-serif;
     margin-top: 5px;
+}
+
+.message.sent .message-meta {
+    color: #d1e7ff;
 }
 
 .message-meta .timestamp {
@@ -352,11 +422,92 @@ body {
 .message-meta .status-ticks {
     display: flex;
     align-items: center;
+    margin-right: 5px;
 }
 
 .message-meta .status-ticks img {
     width: 12px;
     height: 12px;
+}
+
+.message-meta .seen-text {
+    color: #00af9c;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.message-meta .no-internet-icon {
+    width: 12px;
+    height: 12px;
+    margin-left: 5px;
+}
+
+.message:hover .dropdown-icon {
+    opacity: 1;
+}
+
+.dropdown-icon {
+    position: absolute;
+    top: 10px;
+    left: -24px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.message.received .dropdown-icon {
+    left: auto;
+    right: -24px;
+}
+
+.message-menu {
+    position: absolute;
+    top: 10px;
+    left: -130px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 120px;
+    z-index: 100;
+    display: none;
+    backdrop-filter: blur(4px);
+}
+
+.message.received .message-menu {
+    left: auto;
+    right: -130px;
+}
+
+.message-menu.active {
+    display: block;
+}
+
+.message-menu ul {
+    list-style: none;
+    padding: 5px 0;
+    margin: 0;
+}
+
+.message-menu ul li {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.message-menu ul li:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.message-menu ul li img {
+    width: 16px;
+    height: 16px;
 }
 
 .chat-input {
@@ -475,13 +626,38 @@ emoji-picker {
     background-color: #ff6666;
 }
 
-body.dark-theme {
-    color: #f5f5f5;
+.photo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.photo-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.close-photo {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
 }
 
 body.dark-theme .sidebar {
     background-color: rgba(44, 44, 44, 0.2);
     border-right: 1px solid rgba(61, 61, 61, 0.3);
+    backdrop-filter: blur(8px);
 }
 
 body.dark-theme .profile-section,
@@ -518,6 +694,7 @@ body.dark-theme .dropdown-menu ul li:hover {
 
 body.dark-theme .main-content {
     background-color: rgba(44, 44, 44, 0.1);
+    backdrop-filter: blur(8px);
 }
 
 body.dark-theme .chat-app-logo {
@@ -526,6 +703,7 @@ body.dark-theme .chat-app-logo {
 
 body.dark-theme .modal-content {
     background-color: rgba(44, 44, 44, 0.5);
+    backdrop-filter: blur(8px);
 }
 
 body.dark-theme .header-title {
@@ -574,6 +752,7 @@ body.dark-theme .cancel-button:hover {
 body.dark-theme .right-panel {
     background-color: rgba(44, 44, 44, 0.2);
     border-left: 1px solid rgba(61, 61, 61, 0.3);
+    backdrop-filter: blur(8px);
 }
 
 body.dark-theme .message.received {
@@ -583,6 +762,10 @@ body.dark-theme .message.received {
 
 body.dark-theme .message.sent {
     background-color: #0056b3;
+}
+
+body.dark-theme .message.sent .message-meta {
+    color: #a3cfff;
 }
 
 body.dark-theme .message-meta {
@@ -601,6 +784,24 @@ body.dark-theme #send-button {
 
 body.dark-theme #send-button:hover {
     background-color: #003d82;
+}
+
+body.dark-theme .message-menu {
+    background-color: rgba(61, 61, 61, 0.95);
+    color: #f5f5f5;
+    backdrop-filter: blur(4px);
+}
+
+body.dark-theme .message-menu ul li {
+    color: #f5f5f5;
+}
+
+body.dark-theme .message-menu ul li:hover {
+    background-color: rgba(0, 123, 255, 0.2);
+}
+
+body.dark-theme .seen-text {
+    color: #00af9c;
 }
 
 @media (max-width: 768px) {
@@ -638,6 +839,26 @@ body.dark-theme #send-button:hover {
 
     .right-panel {
         width: 200px;
+    }
+
+    .message-menu {
+        left: -100px !important;
+        right: auto !important;
+    }
+
+    .message.received .message-menu {
+        right: -100px !important;
+        left: auto !important;
+    }
+
+    .dropdown-icon {
+        left: -20px !important;
+        right: auto !important;
+    }
+
+    .message.received .dropdown-icon {
+        right: -20px !important;
+        left: auto !important;
     }
 }
 
@@ -733,7 +954,6 @@ body.dark-theme #send-button:hover {
     color: #999;
 }
 
-/* Icon sizes */
 .camera-icon {
     width: 24px;
     height: 24px;
@@ -750,6 +970,7 @@ body.dark-theme #send-button:hover {
     display: flex;
     flex-direction: column;
     background-color: rgba(173, 216, 230, 0.5);
+    backdrop-filter: blur(8px);
     border-radius: 10px;
 }
 
@@ -758,7 +979,7 @@ body.dark-theme #send-button:hover {
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 325, 0.3);
 }
 
 .header-title {
@@ -815,7 +1036,6 @@ body.dark-theme #send-button:hover {
     font-weight: 600;
 }
 
-/* Delete button styling */
 .delete-button {
     flex: 1;
     margin: 10px 5px 10px 15px;
@@ -834,7 +1054,6 @@ body.dark-theme #send-button:hover {
     background-color: #ff6666;
 }
 
-/* Cancel button styling */
 .cancel-button {
     flex: 1;
     margin: 10px 15px 10px 5px;
@@ -853,13 +1072,11 @@ body.dark-theme #send-button:hover {
     background-color: #888;
 }
 
-/* Selection actions container */
 .selection-actions {
     display: flex;
     gap: 10px;
 }
 
-/* Checkbox styling */
 .contact-checkbox {
     margin-right: 10px;
 }

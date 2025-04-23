@@ -1,134 +1,203 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: transparent;
+    background-color: rgba(173, 216, 230, 0.5);
+    backdrop-filter: blur(8px);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: #333;
+    transition: all 0.3s ease;
 }
 
-.profile-modal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 360px;
-    height: 450px;
-    /* Increased height to fit all content */
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    z-index: 999;
+body.dark-theme {
+    background-color: rgba(44, 44, 44, 0.5);
+    color: #f5f5f5;
 }
 
-.profile-box {
-    display: flex;
-    flex-direction: column;
+.modal-content {
+    width: 100%;
     height: 100%;
-    padding: 16px;
-    /* Reduced padding slightly for better fit */
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(173, 216, 230, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
 }
 
-/* Header */
-.profile-header {
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: white;
-    margin-bottom: 16px;
-    /* Reduced margin for better spacing */
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.title {
+.header-title {
     font-size: 18px;
-    margin: 0;
-    flex-grow: 1;
-    text-align: center;
+    font-weight: 500;
     color: #333;
+    text-align: center;
+    flex-grow: 1;
 }
 
-.btn {
+.header-btn {
+    color: #007bff;
     background: none;
     border: none;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
+    padding: 8px 12px;
 }
 
-.btn.cancel {
+.header-btn.cancel {
     color: #666;
 }
 
-.btn.save {
+.header-btn.save {
     color: #007bff;
     font-weight: 600;
 }
 
-/* Avatar Section */
+.theme-toggle {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover .theme-icon {
+    transform: scale(1.1);
+}
+
+.form-container {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+.profile-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.profile-input {
+    width: calc(100% - 32px);
+    padding: 12px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #ffffff;
+    font-size: 16px;
+    outline: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: #333;
+    font-family: inherit;
+}
+
+.profile-input::placeholder {
+    color: #aaa;
+    font-size: 16px;
+}
+
 .avatar-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
-    /* Adjusted margin for better spacing */
-    text-align: center;
+    margin-bottom: 10px;
 }
 
 .avatar-wrapper {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-color: #3498db;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 8px;
-    /* Slightly increased for better separation */
+    position: relative;
+    width: 100px;
+    height: 100px;
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.change-avatar {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.change-avatar:hover {
+    background-color: rgba(0, 123, 255, 0.2);
+}
+
+.camera-icon {
+    width: 24px;
+    height: 24px;
 }
 
 .avatar-text {
-    font-size: 12px;
-    color: #333;
-}
-
-/* Form Fields */
-.profile-body {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    /* Increased gap for better spacing between fields */
-    flex-grow: 1;
-    /* Allow it to take remaining space */
-    overflow-y: hidden;
-    /* Prevent scrolling */
-}
-
-.profile-input {
-    padding: 12px 14px;
-    border-radius: 8px;
-    border: none;
+    margin-top: 10px;
     font-size: 14px;
-    background-color: white;
-    width: 100%;
-    box-sizing: border-box;
+    color: #666;
 }
 
-.profile-input:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #007bff66;
+body.dark-theme .modal-content {
+    background-color: rgba(44, 44, 44, 0.5);
+    backdrop-filter: blur(8px);
 }
 
-.profile-input::placeholder {
-    color: #999;
+body.dark-theme .header-title {
+    color: #f5f5f5;
 }
 
-/* Hide Scrollbar */
-.profile-body::-webkit-scrollbar {
-    display: none;
+body.dark-theme .header-btn.cancel {
+    color: #aaa;
+}
+
+body.dark-theme .profile-input {
+    background-color: #555;
+    color: #f5f5f5;
+}
+
+body.dark-theme .profile-input::placeholder {
+    color: #ccc;
+}
+
+body.dark-theme .change-avatar {
+    background-color: rgba(61, 61, 61, 0.8);
+}
+
+body.dark-theme .change-avatar:hover {
+    background-color: rgba(0, 123, 255, 0.3);
+}
+
+body.dark-theme .avatar-text {
+    color: #ccc;
 }
