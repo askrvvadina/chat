@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <link rel="stylesheet" href="styles/chat.css">
-    <script src="https://unpkg.com/emoji-picker-element@latest/dist/index.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1.12.0/dist/index.js" integrity="sha256-..."
+        crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -101,18 +102,29 @@
                         </div>
                         <button class="cancel-reply" id="cancel-reply">×</button>
                     </div>
+                    <div class="edit-preview" id="edit-preview" style="display: none;">
+                        <div class="edit-content">
+                            <div class="edit-text" id="edit-text"></div>
+                        </div>
+                        <button class="cancel-edit" id="cancel-edit">×</button>
+                    </div>
                     <div class="chat-input">
                         <div class="input-actions">
-                            <img src="images/attach.png" alt="Attach" class="action-icon attach-icon" id="attach-icon">
+                            <div class="attach-icon" id="attach-icon">
+                                <img src="images/attach.png" alt="Attach">
+                            </div>
                             <input type="file" id="file-input" style="display: none;"
                                 accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-                            <img src="images/emoji.png" alt="Emoji" class="action-icon emoji-icon" id="emoji-icon">
+                            <div class="emoji-icon" id="emoji-icon">
+                                <img src="images/emoji.png" alt="Emoji">
+                            </div>
                             <div class="emoji-picker-container" id="emoji-picker-container" style="display: none;">
-                                <emoji-picker id="emoji-picker"></emoji-picker>
+                                <emoji-picker></emoji-picker>
                             </div>
                         </div>
                         <input type="text" id="message-input" placeholder="Type a message...">
                         <button id="send-button">Send</button>
+                        <div class="copy-notification" id="copy-notification">Copied</div>
                     </div>
                 </div>
             </div>
