@@ -65,25 +65,6 @@ body.dark-theme {
     font-weight: 600;
 }
 
-.theme-toggle {
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-icon {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.3s ease;
-}
-
-.theme-toggle:hover .theme-icon {
-    transform: scale(1.1);
-}
-
 .form-container {
     padding: 20px;
     flex-grow: 1;

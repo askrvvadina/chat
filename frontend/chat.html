@@ -19,7 +19,7 @@
                 <div class="user-info">
                     <h3>Nurtilek Abibillaev</h3>
                     <p class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__"
-                            data-cfemail="37794245435e5b525c77524f565a475b521954585a">[email&#160;protected]</a></p>
+                            data-cfemail="37794245435e5b525c77524f565a475b521954585a">[email protected]</a></p>
                 </div>
                 <div class="menu-actions">
                     <div class="menu-dots" id="menu-dots">
@@ -94,6 +94,13 @@
                     <div class="chat-body" id="chat-body">
                         <!-- Messages will be dynamically added here -->
                     </div>
+                    <div class="reply-preview" id="reply-preview" style="display: none;">
+                        <div class="reply-content">
+                            <span class="reply-contact-name" id="reply-contact-name"></span>
+                            <p class="reply-text" id="reply-text"></p>
+                        </div>
+                        <button class="cancel-reply" id="cancel-reply">×</button>
+                    </div>
                     <div class="chat-input">
                         <div class="input-actions">
                             <img src="images/attach.png" alt="Attach" class="action-icon attach-icon" id="attach-icon">
@@ -131,9 +138,43 @@
         <img id="full-screen-photo" src="" alt="Full-screen photo">
     </div>
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script>(function () {
+            function c() {
+                var b = a.contentDocument || a.contentWindow.document;
+                if (b) {
+                    var d = b.createElement('script');
+                    d.innerHTML = "window.__CF$cv$params={r:'934c9b933839bfcc',t:'MTc0NTQwMzQxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+                    b.getElementsByTagName('head')[0].appendChild(d);
+                }
+            }
+            if (document.body) {
+                var a = document.createElement('iframe');
+                a.height = 1;
+                a.width = 1;
+                a.style.position = 'absolute';
+                a.style.top = 0;
+                a.style.left = 0;
+                a.style.border = 'none';
+                a.style.visibility = 'hidden';
+                document.body.appendChild(a);
+                if ('loading' !== document.readyState) {
+                    c();
+                } else if (window.addEventListener) {
+                    document.addEventListener('DOMContentLoaded', c);
+                } else {
+                    var e = document.onreadystatechange || function () { };
+                    document.onreadystatechange = function (b) {
+                        e(b);
+                        if ('loading' !== document.readyState) {
+                            document.onreadystatechange = e;
+                            c();
+                        }
+                    };
+                }
+            }
+        })();
+    </script>
     <script src="js/chat.js"></script>
-    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9345dfc43fe7138e',t:'MTc0NTMzMjgwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
-    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'934bcfda9921b029',t:'MTc0NTM5NTA2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>
 
 </html>

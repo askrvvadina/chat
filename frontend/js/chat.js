@@ -16,6 +16,7 @@ let isSelectionMode = false;
 let currentChatContact = null;
 let isOnline = true;
 let isContactOnline = true;
+let replyingToMessage = null; // Хранит сообщение, на которое отвечают
 
 function setupTopMenu() {
     const menuDots = document.getElementById('menu-dots');
@@ -137,6 +138,7 @@ function setupChatInterface() {
     const photoModal = document.getElementById('photo-modal');
     const fullScreenPhoto = document.getElementById('full-screen-photo');
     const closePhoto = document.getElementById('close-photo');
+    const cancelReplyButton = document.getElementById('cancel-reply');
 
     if (sendButton) {
         sendButton.addEventListener('click', sendMessage);
@@ -197,6 +199,13 @@ function setupChatInterface() {
             photoModal.style.display = 'none';
         });
     }
+
+    if (cancelReplyButton) {
+        cancelReplyButton.addEventListener('click', function () {
+            replyingToMessage = null;
+            document.getElementById('reply-preview').style.display = 'none';
+        });
+    }
 }
 
 function sendMessage() {
@@ -211,10 +220,13 @@ function sendMessage() {
             content: messageText,
             sender: 'user',
             status: 'Failed',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
         };
         addMessageToChat(message);
         saveMessage(currentChatContact.index, message);
+        replyingToMessage = null;
+        document.getElementById('reply-preview').style.display = 'none';
         return;
     }
 
@@ -223,7 +235,8 @@ function sendMessage() {
         content: messageText,
         sender: 'user',
         status: isContactOnline ? 'Delivered' : 'Sent',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
     };
 
     addMessageToChat(message);
@@ -244,6 +257,8 @@ function sendMessage() {
     }, 2000);
 
     messageInput.value = '';
+    replyingToMessage = null;
+    document.getElementById('reply-preview').style.display = 'none';
 }
 
 function sendAttachment(file) {
@@ -258,10 +273,13 @@ function sendAttachment(file) {
             content: 'Failed to send attachment: No internet connection',
             sender: 'user',
             status: 'Failed',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
         };
         addMessageToChat(message);
         saveMessage(currentChatContact.index, message);
+        replyingToMessage = null;
+        document.getElementById('reply-preview').style.display = 'none';
         return;
     }
 
@@ -270,7 +288,8 @@ function sendAttachment(file) {
         content: '',
         sender: 'user',
         status: isContactOnline ? 'Delivered' : 'Sent',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        replyTo: replyingToMessage ? { content: replyingToMessage.content, sender: replyingToMessage.sender } : null
     };
 
     const reader = new FileReader();
@@ -306,6 +325,9 @@ function sendAttachment(file) {
 
             updateMessageStatus(currentChatContact.index, message.timestamp, 'Read');
         }, 2000);
+
+        replyingToMessage = null;
+        document.getElementById('reply-preview').style.display = 'none';
     };
     reader.onerror = function () {
         console.error('Error reading file:', file.name);
@@ -320,6 +342,7 @@ function addMessageToChat(message) {
 
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.sender === 'user' ? 'sent' : 'received'}`;
+    if (message.replyTo) messageDiv.classList.add('reply');
     messageDiv.dataset.timestamp = message.timestamp;
 
     const dropdownIcon = document.createElement('img');
@@ -375,8 +398,18 @@ function addMessageToChat(message) {
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
 
+    if (message.replyTo) {
+        const replyReference = document.createElement('div');
+        replyReference.className = 'reply-reference';
+        replyReference.innerHTML = `
+            <span class="reply-contact-name">${message.replyTo.sender === 'user' ? 'You' : currentChatContact.name}</span>
+            <p class="reply-text">${message.replyTo.content}</p>
+        `;
+        contentDiv.appendChild(replyReference);
+    }
+
     if (message.type === 'text') {
-        contentDiv.textContent = message.content;
+        contentDiv.insertAdjacentHTML('beforeend', message.content);
     } else if (message.type === 'image') {
         const img = document.createElement('img');
         img.src = message.content;
@@ -513,8 +546,16 @@ function handleMessageAction(action, message, messageDiv) {
             loadMessages(currentChatContact.index);
         }
     } else if (action === 'reply-message') {
+        replyingToMessage = message;
+        const replyPreview = document.getElementById('reply-preview');
+        const replyContactName = document.getElementById('reply-contact-name');
+        const replyText = document.getElementById('reply-text');
+
+        replyContactName.textContent = message.sender === 'user' ? 'You' : currentChatContact.name;
+        replyText.textContent = message.content;
+        replyPreview.style.display = 'flex';
+
         const messageInput = document.getElementById('message-input');
-        messageInput.value = `Replying to: "${message.content}"\n`;
         messageInput.focus();
     }
 }
