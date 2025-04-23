@@ -860,6 +860,14 @@ function openModal(url, modalId) {
     document.body.appendChild(modalOverlay);
     document.body.style.overflow = 'hidden';
 
+    // Center the modal overlay content
+    modalOverlay.style.justifyContent = 'center';
+    modalOverlay.style.alignItems = 'center';
+
+    // Make the modal container height auto
+    const modalContainer = modalOverlay.querySelector('.modal-container');
+    modalContainer.style.height = '80vh';
+
     const iframe = modalOverlay.querySelector('iframe');
     iframe.addEventListener('load', () => {
         const isDarkTheme = localStorage.getItem('darkTheme') === 'true';
